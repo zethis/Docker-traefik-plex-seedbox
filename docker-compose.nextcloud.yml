@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    container_name: nextcloud_db
+    network_mode: 'yournetwork'
+    restart: always
+    volumes:
+      - /root/docker/nextcloud/nextcloud/db:/var/lib/mysql
+    environment:
+      - MYSQL_HOST=yourDBHostname
+      - MYSQL_PASSWORD=yourPassword
+      - MYSQL_ROOT_PASSWORD=yourRootPassword
+      - MYSQL_DATABASE=yourDBname
+      - MYSQL_USER=yourDBUser
+
+
+  app:
+    image: nextcloud:apache
+    container_name: nextcloud
+    network_mode: 'yournetwork'
+    restart: always
+    ports:
+      - 80
+    volumes:
+      - /your/path/nextcloud:/var/www/html
+    environment:
+      - MYSQL_HOST=yourDBHostname
+      - MYSQL_PASSWORD=yourPassword
+      - MYSQL_DATABASE=yourDBname
+      - MYSQL_USER=yourDBUser
+    depends_on:
+      - db
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.port=80'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.rule=Host:nextcloud.yourdns.zone'
+      - 'traefik.backend=nextcloud'
