@@ -7,7 +7,7 @@ services:
     network_mode: 'yournetwork'
     restart: always
     volumes:
-      - /root/docker/nextcloud/nextcloud/db:/var/lib/mysql
+      - /your/path/nextcloud/db:/var/lib/mysql
     environment:
       - MYSQL_HOST=yourDBHostname
       - MYSQL_PASSWORD=yourPassword
