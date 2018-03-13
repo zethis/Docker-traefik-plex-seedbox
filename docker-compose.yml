@@ -1,0 +1,192 @@
+version: "2"
+services:
+  ip:
+    container_name: ip
+    image: joshdvir/ipd:latest
+    hostname: ip
+    network_mode: "your-network"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:myip.your-dns.zone'
+      - 'traefik.backend=ip'
+      - 'traefik.frontend.entryPoints=http,https'
+      - "/etc/localtime:/etc/localtime:ro"
+
+  db:
+    image: mariadb
+    container_name: nextcloud_db
+    network_mode: 'yournetwork'
+    restart: always
+    volumes:
+      - /your/path/nextcloud/db:/var/lib/mysql
+      - "/etc/localtime:/etc/localtime:ro" #TO HAVE CORRECT TIME INSIDE CONTAINER
+    environment:
+      - MYSQL_HOST=yourDBHostname
+      - MYSQL_PASSWORD=yourPassword
+      - MYSQL_ROOT_PASSWORD=yourRootPassword
+      - MYSQL_DATABASE=yourDBname
+      - MYSQL_USER=yourDBUser
+
+  app:
+    image: nextcloud:apache
+    container_name: nextcloud
+    network_mode: 'yournetwork'
+    restart: always
+    ports:
+      - 80
+    volumes:
+      - /your/path/nextcloud:/var/www/html
+      - "/etc/localtime:/etc/localtime:ro" #TO HAVE CORRECT TIME INSIDE CONTAINER
+    environment:
+      - MYSQL_HOST=yourDBHostname
+      - MYSQL_PASSWORD=yourPassword
+      - MYSQL_DATABASE=yourDBname
+      - MYSQL_USER=yourDBUser
+    depends_on:
+      - db
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.port=80'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.rule=Host:nextcloud.yourdns.zone'
+      - 'traefik.backend=nextcloud'
+
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    hostname: plex
+    network_mode: "your-network"
+    restart: unless-stopped
+    ports:
+      - 32400:32400/tcp
+      - 3005:3005/tcp
+      - 8324:8324/tcp
+      - 32469:32469/tcp
+      - 1900:1900/udp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /your/path/plex/config:/config
+      - /your/path/plex/temp:/transcode
+      - /your/path/plex/data:/data #PATH TO YOUR HOLLIDAYS FILMS :D
+    labels:
+      - "traefik.port=32400"
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:plex.your-dns.zone'
+      - 'traefik.backend=plex'
+      - 'traefik.frontend.entryPoints=http,https'
+      - "/etc/localtime:/etc/localtime:ro"
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    hostname: portainer
+    restart: unless-stopped
+    network_mode: "your-network"
+    labels:
+       - 'traefik.enable=true'
+       - 'traefik.port=9000'
+       - 'traefik.frontend.entryPoints=http,https'
+       - 'traefik.frontend.rule=Host:portainer.your-dns.zone'
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
+       - /your/path/portainer/data:/data
+       - "/etc/localtime:/etc/localtime:ro"
+
+  rutorrent:
+    container_name: torrents
+    image: xataz/rtorrent-rutorrent:filebot
+    hostname: rutorrent
+    ports:
+      - "45566:45566"
+      - "9527:9527/udp"
+      - "45000:45000"
+    network_mode: "your-network"
+    environment:
+      - UID=1000
+      - GID=1000
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:seedbox.your-dns.zone'
+      - 'traefik.backend=rutorrent'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.auth.basic=user:password'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /your/path/torrents/config:/config
+      - /your/path/torrents/data:/data
+      - /your/path/torrents:/data/torrents
+      - "/etc/localtime:/etc/localtime:ro"
+
+  tautulli:
+    container_name: tautulli
+    image: linuxserver/tautulli
+    hostname: tautulli
+    network_mode: "your-network"
+    restart: unless-stopped
+    ports:
+      - 8181
+    labels:
+      - 'traefik.port=8181'
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:tautulli.your-dns.zone'
+      - 'traefik.frontend.entryPoints=http,https'
+    volumes:
+      - /your/path/tautulli/config:/config
+      - /your/path/tautulli/logs:/logs
+      - "/etc/localtime:/etc/localtime:ro"
+
+  traefik:
+    container_name: traefik
+    image: traefik:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8081"
+    restart: unless-stopped
+    network_mode: "your-network"
+    environment: #AT THIS POINT IT'S ONLY FOR USE TRAEFIK WITH LET'S ENCRYPT AND OVH, IF YOU HAVE ANOTHER PROVIDER PLEASE VISIT THIS PAGE: https://docs.traefik.io/user-guide/examples/#dns-challenge
+      - OVH_ENDPOINT=ovh-eu
+      - OVH_APPLICATION_KEY=
+      - OVH_APPLICATION_SECRET=
+      - OVH_CONSUMER_KEY=
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.port=8081'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.rule=Host:traefik.your-dns.zone'
+      - 'traefik.backend=traefik'
+    volumes:
+      - /var/run/path.sock:/var/run/path.sock
+      - /your/path/traefik/traefik.toml:/etc/traefik/traefik.toml #TRAEFIK CONFIGURATION FILE
+      - /your/path/traefik/logs:/etc/traefik/logs #LOGS TRAEFIK (DEFINED IN traefik.toml)
+      - /your/path/traefik/acme:/etc/traefik/acme #ACME JSON GENERATED BY LET'S ENCRYPT
+      - /your/path/traefik/rules:/etc/traefik/rules #REVERSE PROXY RULES TO ACCESS EXTERNAL SITE
+      - "/etc/localtime:/etc/localtime:ro" #TO HAVE CORRECT TIME INSIDE CONTAINER
+
+  xymon:
+    container_name: xymon
+    image: deweysasser/docker-xymon #I have some trouble with this image, the best way is to clone the repo of deweysasser/docker-xymon and to build the image with the Dockerfile
+    hostname: xymon
+    ports:
+      - "1984:1984"
+    network_mode: "your-network"
+    environment:
+      - GID=1000
+      - UID=1000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /your/path/xymon/config:/etc/xymon
+      - /your/path/xymon/data:/var/lib/xymon
+      - "/etc/localtime:/usr/share/zoneinfo/posixrules:ro"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:xymon.your-dns.zone'
+      - 'traefik.backend=xymon'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.auth.basic=user:password' #if you want to hash your password use .htpassword generator (google is your friend) and double every '$' # exemple user:jhsqdh$h$khjh = user:jhsqdh$$h$$khjh

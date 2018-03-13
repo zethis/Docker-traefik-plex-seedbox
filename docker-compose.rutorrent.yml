@@ -1,7 +1,7 @@
 version: "2"
 services:
   rutorrent:
-    container_name: zethis-torrents
+    container_name: torrents
     image: xataz/rtorrent-rutorrent:filebot
     hostname: rutorrent
     ports:

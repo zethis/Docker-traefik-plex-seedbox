@@ -4,14 +4,14 @@ services:
     container_name: tautulli
     image: linuxserver/tautulli
     hostname: tautulli
-    network_mode: "zethis"
+    network_mode: "your-network"
     restart: unless-stopped
     ports:
       - 8181
     labels:
       - 'traefik.port=8181'
       - 'traefik.enable=true'
-      - 'traefik.frontend.rule=Host:tautulli.zethis.ovh'
+      - 'traefik.frontend.rule=Host:tautulli.your-dns.zone'
       - 'traefik.frontend.entryPoints=http,https'
     volumes:
       - /your/path/tautulli/config:/config
