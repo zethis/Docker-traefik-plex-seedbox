@@ -1,0 +1,26 @@
+version: "2"
+services:
+  rutorrent:
+    container_name: zethis-torrents
+    image: xataz/rtorrent-rutorrent:filebot
+    hostname: rutorrent
+    ports:
+      - "45566:45566"
+      - "9527:9527/udp"
+      - "45000:45000"
+    network_mode: "your-network"
+    environment:
+      - UID=1000
+      - GID=1000
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:seedbox.your-dns.zone'
+      - 'traefik.backend=rutorrent'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.auth.basic=user:password'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /your/path/torrents/config:/config
+      - /your/path/torrents/data:/data
+      - /your/path/torrents:/data/torrents
+      - "/etc/localtime:/etc/localtime:ro"

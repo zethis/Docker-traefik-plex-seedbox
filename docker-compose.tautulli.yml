@@ -1,0 +1,19 @@
+version: "2"
+services:
+  tautulli:
+    container_name: tautulli
+    image: linuxserver/tautulli
+    hostname: tautulli
+    network_mode: "zethis"
+    restart: unless-stopped
+    ports:
+      - 8181
+    labels:
+      - 'traefik.port=8181'
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:tautulli.zethis.ovh'
+      - 'traefik.frontend.entryPoints=http,https'
+    volumes:
+      - /your/path/tautulli/config:/config
+      - /your/path/tautulli/logs:/logs
+      - "/etc/localtime:/etc/localtime:ro"

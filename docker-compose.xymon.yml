@@ -1,0 +1,23 @@
+version: "2"
+services:
+  xymon:
+    container_name: xymon
+    image: deweysasser/docker-xymon #I have some trouble with this image, the best way is to clone the repo of deweysasser/docker-xymon and to build the image with the Dockerfile
+    hostname: xymon
+    ports:
+      - "1984:1984"
+    network_mode: "your-network"
+    environment:
+      - GID=1000
+      - UID=1000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /your/path/xymon/config:/etc/xymon
+      - /your/path/xymon/data:/var/lib/xymon
+      - "/etc/localtime:/usr/share/zoneinfo/posixrules:ro"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:xymon.your-dns.zone'
+      - 'traefik.backend=xymon'
+      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.frontend.auth.basic=user:password' #if you want to hash your password use .htpassword generator (google is your friend) and double every '$' # exemple user:jhsqdh$h$khjh = user:jhsqdh$$h$$khjh

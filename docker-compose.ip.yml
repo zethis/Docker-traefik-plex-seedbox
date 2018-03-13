@@ -1,0 +1,15 @@
+version: "2"
+services:
+  ip:
+    container_name: ip
+    image: joshdvir/ipd:latest
+    hostname: ip
+    network_mode: "your-network"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:myip.your-dns.zone'
+      - 'traefik.backend=ip'
+      - 'traefik.frontend.entryPoints=http,https'
+      - "/etc/localtime:/etc/localtime:ro"
