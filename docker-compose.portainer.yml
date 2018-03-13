@@ -1,0 +1,17 @@
+version: "2"
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    hostname: portainer
+    restart: unless-stopped
+    network_mode: "your-network"
+    labels:
+       - 'traefik.enable=true'
+       - 'traefik.port=9000'
+       - 'traefik.frontend.entryPoints=http,https'
+       - 'traefik.frontend.rule=Host:portainer.your-dns.zone'
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
+       - /your/path/portainer/data:/data
+       - "/etc/localtime:/etc/localtime:ro"

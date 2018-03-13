@@ -8,6 +8,7 @@ services:
     restart: always
     volumes:
       - /your/path/nextcloud/db:/var/lib/mysql
+      - "/etc/localtime:/etc/localtime:ro" #TO HAVE CORRECT TIME INSIDE CONTAINER
     environment:
       - MYSQL_HOST=yourDBHostname
       - MYSQL_PASSWORD=yourPassword
@@ -25,6 +26,7 @@ services:
       - 80
     volumes:
       - /your/path/nextcloud:/var/www/html
+      - "/etc/localtime:/etc/localtime:ro" #TO HAVE CORRECT TIME INSIDE CONTAINER
     environment:
       - MYSQL_HOST=yourDBHostname
       - MYSQL_PASSWORD=yourPassword
