@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  AdGuardHome:
+    container_name: AdGuardHome
+    image: adguard/adguardhome:latest
+    network_mode: #*replace*
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/tcp"
+      - "67:67/udp"
+      - "68:68/tcp"
+      - "68:68/udp"
+      - "853:853/tcp"
+    environment:
+      TZ: 'Europe/Paris'
+    volumes:
+       - '/AdGuardHome/workdir:/opt/adguardhome/work'
+       - '/AdGuardHome/conf:/opt/adguardhome/conf'
+    cap_add:
+      - NET_ADMIN #*maybe not necessary*
+    restart: unless-stopped
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:AdGuardHome.your.domain'
+      - 'traefik.backend=AdGuardHome'
+      - 'traefik.port=3000'
+      - 'traefik.frontend.entryPoints=http,https'
